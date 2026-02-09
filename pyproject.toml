@@ -7,8 +7,19 @@ authors = [
     { name = "yd-pei", email = "162015387+yd-pei@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "anthropic>=0.79.0",
+    "click>=8.3.1",
+    "datasets>=4.5.0",
+    "openai>=2.17.0",
+    "pydantic>=2.12.5",
+    "torch>=2.10.0",
+    "tqdm>=4.67.3",
+]
+
+[project.scripts]
+align_lab = "align_lab.main:cli"
 
 [build-system]
-requires = ["uv_build>=0.9.26,<0.10.0"]
+requires = ["uv_build>=0.10.0"]
 build-backend = "uv_build"
