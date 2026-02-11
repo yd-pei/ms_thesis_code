@@ -8,7 +8,7 @@ from align_lab.eval.benchmarks import run_evaluation
 
 
 class ProjectConfig(BaseModel):
-    model_path: str = "path/to/llama-3.1-70b"
+    model_path: str = "meta-llama/Llama-3.1-70B"  # Use base model, NOT Instruct
     device: str = "cuda"
     batch_size: int = 1
 
@@ -42,11 +42,17 @@ def eval(checkpoint, dataset):
 
 
 @cli.command()
-@click.option("--model", required=True, help="Model ID (e.g., gpt-3.5-turbo, or HF path)")
+@click.option("--model", required=True, help="Model ID (e.g., meta-llama/Llama-3.1-70B for base, or HF path)")
 @click.option("--backend", type=click.Choice(["vllm", "openai", "anthropic", "deepseek"]), default="vllm", help="Inference backend engine")
 @click.option("--api-key", envvar="LLM_API_KEY", help="API Key for OpenAI/Claude/DeepSeek")
 @click.option("--base-url", help="Custom Base URL for API calls (useful for DeepSeek/LocalAI)")
 @click.option("--hf-token", envvar="HF_TOKEN", help="HuggingFace Token (only for vLLM)")
+@click.option(
+    "--quantization",
+    type=click.Choice(["bitsandbytes", "gptq", "awq", "fp8", "none"]),
+    default="bitsandbytes",
+    help="Quantization method for vLLM (default: bitsandbytes 8-bit)",
+)
 @click.option(
     "--data-path",
     default="data/01_processed_quality/quality_train.jsonl",
@@ -55,13 +61,14 @@ def eval(checkpoint, dataset):
 @click.option(
     "--output-path", default="outputs/quality_generations.jsonl", help="Output file"
 )
-def inference(model, backend, api_key, base_url, hf_token, data_path, output_path):
+def inference(model, backend, api_key, base_url, hf_token, quantization, data_path, output_path):
     """Run inference using vLLM (local) or API (GPT/Claude/DeepSeek)"""
     
     if backend == "vllm":
         if not hf_token:
             click.echo("Warning: HF_TOKEN is usually required for gated models in vLLM.")
-        run_offline_inference(model, data_path, output_path, hf_token)
+        quant = quantization if quantization != "none" else None
+        run_offline_inference(model, data_path, output_path, hf_token, quantization=quant)
     else:
         # Import here to avoid soft dependency issues if api modules are generic
         from align_lab.inference.engine import run_api_inference

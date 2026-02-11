@@ -82,9 +82,23 @@ def extract_answer_components(output_text: str):
         
     return output_label, reasoning
 
-def run_offline_inference(model_path: str, data_path: str, output_path: str, hf_token: str = None):
+def run_offline_inference(
+    model_path: str, 
+    data_path: str, 
+    output_path: str, 
+    hf_token: str = None, 
+    quantization: str = "bitsandbytes"
+):
     """
     Run offline inference using vLLM on QuALITY dataset.
+    
+    Args:
+        model_path: HuggingFace model ID or local path (use base model, not Instruct).
+        data_path: Path to the input JSONL file.
+        output_path: Path to save inference results.
+        hf_token: HuggingFace token for gated models.
+        quantization: Quantization method. Options: 'bitsandbytes' (8-bit, recommended
+                      for memory-constrained setups), 'gptq', 'awq', 'fp8', None.
     """
     try:
         from vllm import LLM, SamplingParams
@@ -128,15 +142,41 @@ def run_offline_inference(model_path: str, data_path: str, output_path: str, hf_
             records.append(data)
 
     # 2. Initialize vLLM
-    print(f"Initializing vLLM with model: {model_path}")
-    llm = LLM(
+    print(f"Initializing vLLM with model: {model_path} (quantization={quantization})")
+    
+    llm_kwargs = dict(
         model=model_path,
         trust_remote_code=True,
-        dtype='bfloat16',
-        quantization='fp8',
         tensor_parallel_size=torch.cuda.device_count(),
-        enforce_eager = True
+        enforce_eager=True,
     )
+    
+    if quantization == "bitsandbytes":
+        # 8-bit quantization via bitsandbytes: loads weights in 8-bit directly,
+        # significantly reducing VRAM usage (~70GB -> ~35GB for 70B model)
+        llm_kwargs.update(
+            dtype="bfloat16",
+            quantization="bitsandbytes",
+            load_format="bitsandbytes",
+            gpu_memory_utilization=0.92,
+        )
+    elif quantization in ("gptq", "awq"):
+        # Pre-quantized models (model_path must point to a GPTQ/AWQ checkpoint)
+        llm_kwargs.update(
+            dtype="half",
+            quantization=quantization,
+        )
+    elif quantization == "fp8":
+        # FP8 quantization (requires H100/Ada GPU)
+        llm_kwargs.update(
+            dtype="bfloat16",
+            quantization="fp8",
+        )
+    else:
+        # No quantization, full precision
+        llm_kwargs["dtype"] = "bfloat16"
+    
+    llm = LLM(**llm_kwargs)
     
     # 3. Define Sampling Params (Greedy decoding for deterministic answers, or slight temp)
     # Using specific stop tokens to prevent run-on generation
