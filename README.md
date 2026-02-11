@@ -6,6 +6,7 @@
 
 ```bash
 uv sync
+hf download yidingp/mitigate_preference_dpo --local-dir ./data --repo-type dataset
 ```
 
 ### Inference

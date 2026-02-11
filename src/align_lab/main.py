@@ -2,9 +2,9 @@ import click
 import yaml
 from pathlib import Path
 from pydantic import BaseModel
-from align_lab.training.dpo_trainer import run_dpo
+# from align_lab.training.dpo_trainer import run_dpo
 from align_lab.inference.engine import run_inference, run_offline_inference
-from align_lab.eval.benchmarks import run_evaluation
+# from align_lab.eval.benchmarks import run_evaluation
 
 
 class ProjectConfig(BaseModel):
@@ -29,7 +29,7 @@ def train(config, lr):
         params["learning_rate"] = lr
 
     click.echo(f"Starting DPO Training on {params.get('model_path')}")
-    run_dpo(params)
+    # run_dpo(params)
 
 
 @cli.command()
@@ -38,7 +38,7 @@ def train(config, lr):
 def eval(checkpoint, dataset):
     """Run Benchmarks (GSM8K, MMLU, etc.)"""
     click.echo(f"Evaluating {checkpoint} on {dataset}...")
-    run_evaluation(checkpoint, dataset)
+    # run_evaluation(checkpoint, dataset)
 
 
 @cli.command()
