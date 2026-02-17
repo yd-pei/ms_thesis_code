@@ -158,7 +158,8 @@ def run_offline_inference(
     outputs = llm.chat(all_messages, sampling_params)
 
     # 5. Save Results
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    if os.path.dirname(output_path):
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
     print(f"Saving results to {output_path}...")
     
     with open(output_path, "w", encoding="utf-8") as f:
@@ -250,7 +251,8 @@ def run_api_inference(
     # Generation Loop
     print(f"Generating responses for {len(records)} samples using {backend} ({model_name})...")
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    if os.path.dirname(output_path):
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     with open(output_path, "w", encoding="utf-8") as f_out:
         for record in tqdm(records):
