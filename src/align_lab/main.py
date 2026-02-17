@@ -2,13 +2,12 @@ import click
 import yaml
 from pathlib import Path
 from pydantic import BaseModel
-# from align_lab.training.dpo_trainer import run_dpo
 from align_lab.inference.engine import run_inference, run_offline_inference
 # from align_lab.eval.benchmarks import run_evaluation
 
 
 class ProjectConfig(BaseModel):
-    model_path: str = "meta-llama/Llama-3.1-70B"  # Use base model, NOT Instruct
+    model_path: str = "meta-llama/Llama-3.1-70B-Instruct"  # Use Instruct model for chat inference
     device: str = "cuda"
     batch_size: int = 1
 
@@ -42,7 +41,7 @@ def eval(checkpoint, dataset):
 
 
 @cli.command()
-@click.option("--model", required=True, help="Model ID (e.g., meta-llama/Llama-3.1-70B for base, or HF path)")
+@click.option("--model", required=True, help="Model ID (e.g., meta-llama/Llama-3.1-70B-Instruct for chat inference, or HF path)")
 @click.option("--backend", type=click.Choice(["vllm", "openai", "anthropic", "deepseek"]), default="vllm", help="Inference backend engine")
 @click.option("--api-key", envvar="LLM_API_KEY", help="API Key for OpenAI/Claude/DeepSeek")
 @click.option("--base-url", help="Custom Base URL for API calls (useful for DeepSeek/LocalAI)")

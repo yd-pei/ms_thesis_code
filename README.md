@@ -27,7 +27,7 @@ uv run align_lab inference \
 
 ```bash
 uv run align_lab inference \
-    --model meta-llama/Meta-Llama-3.1-70B \
+    --model meta-llama/Llama-3.1-70B-Instruct \
     --backend vllm \
-    --hf-token "<hf_HuggingFaceToken>"
+    --hf-token "<hf_token>"
 ```

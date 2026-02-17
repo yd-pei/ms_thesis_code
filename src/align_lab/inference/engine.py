@@ -17,42 +17,9 @@ except ImportError:
     anthropic = None
 
 
-ONE_SHOT_TEMPLATE = """Read the following articles and answer the multiple-choice questions based on the text.
-
-==================================================
-Article:
-The sun was setting behind the mountains, casting a golden hue over the valley. Sarah packed her hiking gear, making sure she had her flashlight. She knew the descent would be dark.
-
-Question: Why did Sarah pack a flashlight?
-(A) To signal for help
-(B) Because she expected it to get dark during her descent
-(C) To explore a cave
-(D) Because it was broken
-
-Reasoning: The text explicitly states that the sun was setting and Sarah "knew the descent would be dark." Therefore, she packed the flashlight to see in the dark. This aligns with option (B).
-Answer: (B)
-==================================================
-Article:
-{article_text}
-
-Question: {question_text}
-{options_formatted}
-
-Reasoning:"""
-
 def run_inference(model_path):
     pass
 
-def format_quality_prompt(article: str, question: str, options: List[str]) -> str:
-    """
-    Format the input for a base LLM using the one-shot template.
-    """
-    options_formatted = "\n".join([f"({chr(65+i)}) {opt}" for i, opt in enumerate(options)])
-    return ONE_SHOT_TEMPLATE.format(
-        article_text=article,
-        question_text=question,
-        options_formatted=options_formatted
-    )
 
 
 def extract_answer_components(output_text: str):
@@ -93,7 +60,7 @@ def run_offline_inference(
     Run offline inference using vLLM on QuALITY dataset.
     
     Args:
-        model_path: HuggingFace model ID or local path (use base model, not Instruct).
+        model_path: HuggingFace model ID or local path (use an Instruct/chat model).
         data_path: Path to the input JSONL file.
         output_path: Path to save inference results.
         hf_token: HuggingFace token for gated models.
@@ -115,18 +82,18 @@ def run_offline_inference(
 
     # 1. Load Data
     print(f"Loading data from {data_path}...")
-    prompts = []
+    all_messages = []
     records = []
     
     with open(data_path, "r", encoding="utf-8") as f:
         for line in f:
             data = json.loads(line)
-            prompt = format_quality_prompt(
-                data["article"], 
-                data["question"], 
+            messages = format_quality_chat_messages(
+                data["article"],
+                data["question"],
                 data["options"]
             )
-            prompts.append(prompt)
+            all_messages.append(messages)
             
             # Convert gold_label from 1234 to ABCD
             if "gold_label" in data:
@@ -178,17 +145,17 @@ def run_offline_inference(
     
     llm = LLM(**llm_kwargs)
     
-    # 3. Define Sampling Params (Greedy decoding for deterministic answers, or slight temp)
-    # Using specific stop tokens to prevent run-on generation
+    # 3. Define Sampling Params
     sampling_params = SamplingParams(
-        temperature=0.0, 
-        max_tokens=64,
-        stop=["\nArticle:", "\nQuestion:", "=================================================="]
+        temperature=1.0,
+        top_p=0.90,
+        max_tokens=2048,
+        n=1,
     )
 
-    # 4. Generate
-    print(f"Generating responses for {len(prompts)} samples...")
-    outputs = llm.generate(prompts, sampling_params)
+    # 4. Generate (chat format for Instruct models)
+    print(f"Generating responses for {len(all_messages)} samples...")
+    outputs = llm.chat(all_messages, sampling_params)
 
     # 5. Save Results
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -202,8 +169,8 @@ def run_offline_inference(
             
             # Construct the final output record
             final_record = {
-                "question_unique_id": record.get("question_unique_id"),
                 "article": record.get("article"),
+                "question_unique_id": record.get("question_unique_id"),
                 "gold_label": record.get("gold_label"),
                 "output_label": output_label,
                 "reason": reason,
@@ -216,22 +183,24 @@ def run_offline_inference(
 
 def format_quality_chat_messages(article: str, question: str, options: List[str]) -> List[dict]:
     """
-    Format the input for chat-based LLMs (OpenAI/Claude/DeepSeek) using messages.
+    Format the input for chat-based LLMs (OpenAI/Claude/DeepSeek/vLLM-Instruct) using messages.
+    Zero-shot format: system sets the task; user provides article, question, and options.
     """
     options_formatted = "\n".join([f"({chr(65+i)}) {opt}" for i, opt in enumerate(options)])
     
     system_content = (
-        "You are a helpful AI assistant that answers multiple-choice reading comprehension questions. "
-        "First, provide your reasoning step-by-step. "
-        "Then, state the final answer in the format 'Answer: (X)', where X is the option letter."
+        "You are a helpful AI assistant that answers multiple-choice reading comprehension questions.\n"
+        "First, provide your reasoning step-by-step.\n"
+        "Then, state the final answer on a new line in the exact format:\n"
+        "Answer: (X)\n"
+        "where X is one of A, B, C, or D."
     )
     
     user_content = (
         f"Read the following article and answer the question.\n\n"
         f"Article:\n{article}\n\n"
         f"Question: {question}\n"
-        f"{options_formatted}\n\n"
-        "Provide your reasoning and the final answer."
+        f"{options_formatted}"
     )
     
     return [
@@ -300,8 +269,10 @@ def run_api_inference(
                         response = client.chat.completions.create(
                             model=model_name,
                             messages=messages,
-                            temperature=0.0,
-                            max_tokens=256
+                            temperature=1.0,
+                            top_p=0.90,
+                            max_tokens=2048,
+                            n=1,
                         )
                         output_text = response.choices[0].message.content
                     elif backend == "anthropic":
@@ -312,8 +283,9 @@ def run_api_inference(
                             model=model_name,
                             system=system_msg,
                             messages=chat_msgs,
-                            max_tokens=256,
-                            temperature=0.0
+                            max_tokens=2048,
+                            temperature=1.0,
+                            top_p=0.90,
                         )
                         output_text = response.content[0].text
                         
