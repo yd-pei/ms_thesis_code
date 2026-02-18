@@ -120,14 +120,14 @@ def main():
     parser.add_argument(
         "--max-tokens",
         type=int,
-        default=512,
-        help="Max tokens for generation (default: 512).",
+        default=2048,
+        help="Max tokens for generation.",
     )
     parser.add_argument(
         "--temperature",
         type=float,
-        default=0.0,
-        help="Sampling temperature (default: 0.0 for greedy).",
+        default=1.0,
+        help="Sampling temperature.",
     )
     args = parser.parse_args()
 
