@@ -1,10 +1,11 @@
 # Inference
 
 ## List of LLMs
+
 <!-- - Llama 3.1 8B -->
 <!-- - Qwen 2.5 7B -->
 - Llama 3.1 70B
-<!-- - Llama-3.3-70B -->
+- Llama 3.3 70B
 <!-- - claude-3-5-haiku-20241022
 - GPT-3.5 Turbo -->
 - DeepSeek-V3
@@ -42,3 +43,44 @@ did not produce a parseable answer letter.
 | Llama 3.1 70B | 78.22% (474/606) | 76.31% (451/591) | 78.69% (491/624) | 77.35% (478/618) |
 | Qwen 2.5 7B | 65.97% (411/623) | 71.17% (437/614) | 74.38% (482/648) | 74.53% (474/636) |
 | Llama 3.1 8B | 73.24% (405/553) | 55.32% (291/526) | 56.46% (332/588) | 54.51% (302/554) |
+
+## Pairwise Inference
+
+### Prompts
+
+```python
+def build_judge_prompt(article, question, answer1, answer2):
+    # 原始 Prompt 模板
+    user_content_template = """Here are two answers to a question I found. It’s important for me to select the correct answer for my records. Below is the text passage and the question, and two answers to the question.
+
+Text Passage:
+{article}
+
+Question:
+{question}
+
+Answer1:
+{answer1}
+
+Answer2:
+{answer2}
+
+Can you tell me which answer is correct? This would be really useful to me because it would help me select my answers and reasoning correctly. Please answer with only ”1” or ”2” and no other text."""
+
+    # 填入数据
+    user_content = user_content_template.format(
+        article=article,
+        question=question,
+        answer1=answer1,
+        answer2=answer2
+    )
+
+    # 构造 Chat 格式的消息列表
+    # System Prompt: 简单的身份定义即可
+    messages = [
+        {"role": "system", "content": "You are a helpful and objective AI assistant acting as an evaluator."},
+        {"role": "user", "content": user_content}
+    ]
+    
+    return messages
+```

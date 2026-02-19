@@ -3,6 +3,7 @@ import yaml
 from pathlib import Path
 from pydantic import BaseModel
 from align_lab.inference.engine import run_inference, run_offline_inference
+from align_lab.inference.judge import run_vllm_judge_inference
 # from align_lab.eval.benchmarks import run_evaluation
 
 
@@ -86,6 +87,54 @@ def inference(model, backend, api_key, base_url, hf_token, quantization, data_pa
             data_path=data_path,
             output_path=output_path
         )
+
+
+@cli.command()
+@click.option("--model", required=True, help="Judge model ID (Instruct/chat model for vLLM)")
+@click.option("--hf-token", envvar="HF_TOKEN", help="HuggingFace token for gated models")
+@click.option(
+    "--quantization",
+    type=click.Choice(["bitsandbytes", "gptq", "awq", "fp8", "none"]),
+    default="bitsandbytes",
+    help="Quantization method for vLLM (default: bitsandbytes 8-bit)",
+)
+@click.option(
+    "--data-path",
+    default="data/04_clean_pairwise_output/llama31_70b__ds_v3.jsonl",
+    help="Input pairwise-clean JSONL file",
+)
+@click.option(
+    "--quality-path",
+    default="data/01_processed_quality/quality_train.jsonl",
+    help="QuALITY train JSONL used to recover article/question by question_unique_id",
+)
+@click.option(
+    "--output-path",
+    default="outputs/judge_results.jsonl",
+    help="Output JSONL file (keeps all original fields + judge_output)",
+)
+@click.option(
+    "--swap-answers",
+    is_flag=True,
+    help="Swap answer1/answer2 when building judge prompt",
+)
+def judge(model, hf_token, quantization, data_path, quality_path, output_path, swap_answers):
+    """Run local vLLM judge on pairwise-clean outputs using article/question context."""
+    if not hf_token:
+        click.echo("Warning: HF_TOKEN is usually required for gated models in vLLM.")
+
+    quant = quantization if quantization != "none" else None
+
+    click.echo(f"Running local judge with model: {model}")
+    run_vllm_judge_inference(
+        model_path=model,
+        data_path=data_path,
+        output_path=output_path,
+        quality_path=quality_path,
+        swap_answers=swap_answers,
+        hf_token=hf_token,
+        quantization=quant,
+    )
 
 
 if __name__ == "__main__":
