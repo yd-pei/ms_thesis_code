@@ -50,7 +50,6 @@ did not produce a parseable answer letter.
 
 ```python
 def build_judge_prompt(article, question, answer1, answer2):
-    # 原始 Prompt 模板
     user_content_template = """Here are two answers to a question I found. It’s important for me to select the correct answer for my records. Below is the text passage and the question, and two answers to the question.
 
 Text Passage:
@@ -67,16 +66,13 @@ Answer2:
 
 Can you tell me which answer is correct? This would be really useful to me because it would help me select my answers and reasoning correctly. Please answer with only ”1” or ”2” and no other text."""
 
-    # 填入数据
     user_content = user_content_template.format(
         article=article,
         question=question,
         answer1=answer1,
         answer2=answer2
     )
-
-    # 构造 Chat 格式的消息列表
-    # System Prompt: 简单的身份定义即可
+    
     messages = [
         {"role": "system", "content": "You are a helpful and objective AI assistant acting as an evaluator."},
         {"role": "user", "content": user_content}
@@ -84,3 +80,5 @@ Can you tell me which answer is correct? This would be really useful to me becau
     
     return messages
 ```
+
+### Results
