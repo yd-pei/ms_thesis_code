@@ -23,6 +23,9 @@ export HF_TOKEN="hf_xxx"
 --hf-token "hf_xxx"
 ```
 
+`--hf-token` can be placed anywhere in the command options (usually after `--model` for readability).
+It is needed for local `vllm` model loading (inference/judge), not for OpenAI/Anthropic API calls.
+
 `huggingface-cli login` is optional for this project (not required if `HF_TOKEN`/`--hf-token` is provided).
 
 ### Inference
@@ -31,6 +34,7 @@ export HF_TOKEN="hf_xxx"
 uv run align_lab inference \
     --model gpt-3.5-turbo \
     --backend openai \
+    --config-path configs/inference.yaml \
     --api-key "sk-..."
 ```
 
@@ -38,6 +42,7 @@ uv run align_lab inference \
 uv run align_lab inference \
     --model claude-3-5-sonnet-20240620 \
     --backend anthropic \
+    --config-path configs/inference.yaml \
     --api-key "sk-ant-..."
 ```
 
@@ -45,6 +50,7 @@ uv run align_lab inference \
 uv run align_lab inference \
     --model meta-llama/Llama-3.1-70B-Instruct \
     --backend vllm \
+    --config-path configs/inference.yaml \
     --hf-token "<hf_token>"
 ```
 
@@ -55,6 +61,7 @@ uv run align_lab judge \
     --model meta-llama/Llama-3.1-70B-Instruct \
     --data-path data/04_clean_pairwise_output/llama31_70b__ds_v3.jsonl \
     --quality-path data/01_processed_quality/quality_train.jsonl \
+    --config-path configs/judge.yaml \
     --hf-token "<hf_token>" \
     --output-path outputs/judge_results.jsonl
 ```
@@ -64,6 +71,7 @@ uv run align_lab judge \
     --model meta-llama/Llama-3.1-70B-Instruct \
     --data-path data/04_clean_pairwise_output/llama31_70b__ds_v3.jsonl \
     --quality-path data/01_processed_quality/quality_train.jsonl \
+    --config-path configs/judge.yaml \
     --hf-token "<hf_token>" \
     --output-path outputs/judge_results_swapped.jsonl \
     --swap-answers

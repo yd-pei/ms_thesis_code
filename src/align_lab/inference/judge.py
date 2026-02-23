@@ -7,6 +7,25 @@ from tqdm import tqdm
 
 JUDGE_SYSTEM_PROMPT = "You are a helpful and objective AI assistant acting as an evaluator."
 
+DEFAULT_JUDGE_SAMPLING = {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_tokens": 16,
+    "n": 1,
+}
+
+
+def _resolve_judge_sampling_config(sampling_config: dict[str, Any] | None) -> dict[str, Any]:
+    resolved = dict(DEFAULT_JUDGE_SAMPLING)
+    if not sampling_config:
+        return resolved
+
+    for key in resolved.keys():
+        if key in sampling_config and sampling_config[key] is not None:
+            resolved[key] = sampling_config[key]
+
+    return resolved
+
 
 def build_judge_messages(article: str, question: str, answer1: str, answer2: str) -> list[dict]:
     user_content = f"""Here are two answers to a question I found. It’s important for me to select the correct answer for my records. Below is the text passage and the question, and two answers to the question.
@@ -73,6 +92,7 @@ def run_vllm_judge_inference(
     swap_answers: bool = False,
     hf_token: str | None = None,
     quantization: str | None = "bitsandbytes",
+    sampling_config: dict[str, Any] | None = None,
 ):
     """
     Judge pairwise model outputs with a local vLLM model.
@@ -180,11 +200,12 @@ def run_vllm_judge_inference(
 
     llm = LLM(**llm_kwargs)
 
+    resolved_sampling = _resolve_judge_sampling_config(sampling_config)
     sampling_params = SamplingParams(
-        temperature=0.0,
-        top_p=1.0,
-        max_tokens=16,
-        n=1,
+        temperature=resolved_sampling["temperature"],
+        top_p=resolved_sampling["top_p"],
+        max_tokens=resolved_sampling["max_tokens"],
+        n=resolved_sampling["n"],
     )
 
     print(f"Running judge inference for {len(all_messages)} samples...")

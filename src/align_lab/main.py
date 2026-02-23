@@ -7,6 +7,19 @@ from align_lab.inference.judge import run_vllm_judge_inference
 # from align_lab.eval.benchmarks import run_evaluation
 
 
+def _load_sampling_config(config_path: str) -> dict:
+    path = Path(config_path)
+    if not path.exists():
+        raise click.BadParameter(f"Config file not found: {config_path}")
+
+    data = yaml.safe_load(path.read_text())
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise click.BadParameter(f"Config file must be a mapping/dict: {config_path}")
+    return data
+
+
 class ProjectConfig(BaseModel):
     model_path: str = "meta-llama/Llama-3.1-70B-Instruct"  # Use Instruct model for chat inference
     device: str = "cuda"
@@ -61,14 +74,27 @@ def eval(checkpoint, dataset):
 @click.option(
     "--output-path", default="outputs/quality_generations.jsonl", help="Output file"
 )
-def inference(model, backend, api_key, base_url, hf_token, quantization, data_path, output_path):
+@click.option(
+    "--config-path",
+    default="configs/inference.yaml",
+    help="YAML config file for inference sampling hyperparameters",
+)
+def inference(model, backend, api_key, base_url, hf_token, quantization, data_path, output_path, config_path):
     """Run inference using vLLM (local) or API (GPT/Claude/DeepSeek)"""
+    sampling_config = _load_sampling_config(config_path)
     
     if backend == "vllm":
         if not hf_token:
             click.echo("Warning: HF_TOKEN is usually required for gated models in vLLM.")
         quant = quantization if quantization != "none" else None
-        run_offline_inference(model, data_path, output_path, hf_token, quantization=quant)
+        run_offline_inference(
+            model,
+            data_path,
+            output_path,
+            hf_token,
+            quantization=quant,
+            sampling_config=sampling_config,
+        )
     else:
         # Import here to avoid soft dependency issues if api modules are generic
         from align_lab.inference.engine import run_api_inference
@@ -85,7 +111,8 @@ def inference(model, backend, api_key, base_url, hf_token, quantization, data_pa
             api_key=api_key,
             base_url=base_url,
             data_path=data_path,
-            output_path=output_path
+            output_path=output_path,
+            sampling_config=sampling_config,
         )
 
 
@@ -118,8 +145,15 @@ def inference(model, backend, api_key, base_url, hf_token, quantization, data_pa
     is_flag=True,
     help="Swap answer1/answer2 when building judge prompt",
 )
-def judge(model, hf_token, quantization, data_path, quality_path, output_path, swap_answers):
+@click.option(
+    "--config-path",
+    default="configs/judge.yaml",
+    help="YAML config file for judge sampling hyperparameters",
+)
+def judge(model, hf_token, quantization, data_path, quality_path, output_path, swap_answers, config_path):
     """Run local vLLM judge on pairwise-clean outputs using article/question context."""
+    sampling_config = _load_sampling_config(config_path)
+
     if not hf_token:
         click.echo("Warning: HF_TOKEN is usually required for gated models in vLLM.")
 
@@ -134,6 +168,7 @@ def judge(model, hf_token, quantization, data_path, quality_path, output_path, s
         swap_answers=swap_answers,
         hf_token=hf_token,
         quantization=quant,
+        sampling_config=sampling_config,
     )
 
 

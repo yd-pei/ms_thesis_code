@@ -2,7 +2,7 @@
 import os
 import json
 import time
-from typing import List, Optional
+from typing import Any, List, Optional
 import re
 from tqdm import tqdm
 
@@ -15,6 +15,26 @@ try:
     import anthropic
 except ImportError:
     anthropic = None
+
+
+DEFAULT_INFERENCE_SAMPLING = {
+    "temperature": 1.0,
+    "top_p": 0.90,
+    "max_tokens": 2048,
+    "n": 1,
+}
+
+
+def _resolve_inference_sampling_config(sampling_config: Optional[dict[str, Any]]) -> dict[str, Any]:
+    resolved = dict(DEFAULT_INFERENCE_SAMPLING)
+    if not sampling_config:
+        return resolved
+
+    for key in resolved.keys():
+        if key in sampling_config and sampling_config[key] is not None:
+            resolved[key] = sampling_config[key]
+
+    return resolved
 
 
 def run_inference(model_path):
@@ -54,7 +74,8 @@ def run_offline_inference(
     data_path: str, 
     output_path: str, 
     hf_token: str = None, 
-    quantization: str = "bitsandbytes"
+    quantization: str = "bitsandbytes",
+    sampling_config: Optional[dict[str, Any]] = None,
 ):
     """
     Run offline inference using vLLM on QuALITY dataset.
@@ -146,11 +167,12 @@ def run_offline_inference(
     llm = LLM(**llm_kwargs)
     
     # 3. Define Sampling Params
+    resolved_sampling = _resolve_inference_sampling_config(sampling_config)
     sampling_params = SamplingParams(
-        temperature=1.0,
-        top_p=0.90,
-        max_tokens=2048,
-        n=1,
+        temperature=resolved_sampling["temperature"],
+        top_p=resolved_sampling["top_p"],
+        max_tokens=resolved_sampling["max_tokens"],
+        n=resolved_sampling["n"],
     )
 
     # 4. Generate (chat format for Instruct models)
@@ -215,7 +237,8 @@ def run_api_inference(
     api_key: str, 
     base_url: Optional[str], 
     data_path: str, 
-    output_path: str
+    output_path: str,
+    sampling_config: Optional[dict[str, Any]] = None,
 ):
     """
     Run inference using API-based models (OpenAI, Anthropic, DeepSeek).
@@ -234,6 +257,8 @@ def run_api_inference(
         client = anthropic.Anthropic(api_key=api_key, base_url=base_url)
         
     print(f"Loading data from {data_path}...")
+    resolved_sampling = _resolve_inference_sampling_config(sampling_config)
+
     records = []
     with open(data_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -271,10 +296,10 @@ def run_api_inference(
                         response = client.chat.completions.create(
                             model=model_name,
                             messages=messages,
-                            temperature=1.0,
-                            top_p=0.90,
-                            max_tokens=2048,
-                            n=1,
+                            temperature=resolved_sampling["temperature"],
+                            top_p=resolved_sampling["top_p"],
+                            max_tokens=resolved_sampling["max_tokens"],
+                            n=resolved_sampling["n"],
                         )
                         output_text = response.choices[0].message.content
                     elif backend == "anthropic":
@@ -285,9 +310,9 @@ def run_api_inference(
                             model=model_name,
                             system=system_msg,
                             messages=chat_msgs,
-                            max_tokens=2048,
-                            temperature=1.0,
-                            top_p=0.90,
+                            max_tokens=resolved_sampling["max_tokens"],
+                            temperature=resolved_sampling["temperature"],
+                            top_p=resolved_sampling["top_p"],
                         )
                         output_text = response.content[0].text
                         
