@@ -29,8 +29,10 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
-DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "05_pairwise_response"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "06_position_independent_response"
+DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "05_pairwise_response" / "greedy"
+DEFAULT_OUTPUT_DIR = (
+    PROJECT_ROOT / "data" / "06_position_independent_response" / "greedy"
+)
 VALID = {"1", "2"}
 
 
@@ -55,7 +57,9 @@ def load_jsonl_by_qid(path: Path) -> dict[str, dict[str, Any]]:
             try:
                 row = json.loads(line)
             except json.JSONDecodeError as exc:
-                raise ValueError(f"JSON parse error in {path} line {lineno}: {exc}") from exc
+                raise ValueError(
+                    f"JSON parse error in {path} line {lineno}: {exc}"
+                ) from exc
 
             qid = row.get("question_unique_id")
             if not qid:
@@ -66,7 +70,9 @@ def load_jsonl_by_qid(path: Path) -> dict[str, dict[str, Any]]:
             data[qid] = row
 
     if duplicates:
-        print(f"[warn] {path.name}: duplicate question_unique_id count={duplicates} (last occurrence kept)")
+        print(
+            f"[warn] {path.name}: duplicate question_unique_id count={duplicates} (last occurrence kept)"
+        )
 
     return data
 
@@ -117,7 +123,9 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def process_pair(normal_file: Path, reverse_file: Path, output_file: Path) -> dict[str, int]:
+def process_pair(
+    normal_file: Path, reverse_file: Path, output_file: Path
+) -> dict[str, int]:
     normal_map = load_jsonl_by_qid(normal_file)
     reverse_map = load_jsonl_by_qid(reverse_file)
 
@@ -139,7 +147,11 @@ def process_pair(normal_file: Path, reverse_file: Path, output_file: Path) -> di
 
 def collect_pairs(input_dir: Path) -> list[tuple[Path, Path]]:
     normal_files = sorted(
-        [p for p in input_dir.glob("*.jsonl") if p.is_file() and not p.stem.endswith("_reverse")]
+        [
+            p
+            for p in input_dir.glob("*.jsonl")
+            if p.is_file() and not p.stem.endswith("_reverse")
+        ]
     )
 
     pairs: list[tuple[Path, Path]] = []
@@ -169,8 +181,12 @@ def main() -> None:
         default=DEFAULT_OUTPUT_DIR,
         help=f"Output directory (default: {DEFAULT_OUTPUT_DIR})",
     )
-    parser.add_argument("--normal-file", type=Path, default=None, help="Optional normal JSONL file")
-    parser.add_argument("--reverse-file", type=Path, default=None, help="Optional reverse JSONL file")
+    parser.add_argument(
+        "--normal-file", type=Path, default=None, help="Optional normal JSONL file"
+    )
+    parser.add_argument(
+        "--reverse-file", type=Path, default=None, help="Optional reverse JSONL file"
+    )
     parser.add_argument(
         "--output-file",
         type=Path,
@@ -183,7 +199,9 @@ def main() -> None:
 
     if args.normal_file or args.reverse_file:
         if not (args.normal_file and args.reverse_file):
-            raise ValueError("Please provide both --normal-file and --reverse-file together.")
+            raise ValueError(
+                "Please provide both --normal-file and --reverse-file together."
+            )
         if not args.normal_file.exists():
             raise FileNotFoundError(f"Normal file not found: {args.normal_file}")
         if not args.reverse_file.exists():

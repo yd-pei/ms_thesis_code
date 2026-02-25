@@ -2,9 +2,13 @@ import click
 import yaml
 from pathlib import Path
 from pydantic import BaseModel
+from dotenv import load_dotenv
 from align_lab.inference.engine import run_inference, run_offline_inference
 from align_lab.inference.judge import run_vllm_judge_inference
 # from align_lab.eval.benchmarks import run_evaluation
+
+
+load_dotenv()
 
 
 def _load_sampling_config(config_path: str) -> dict:

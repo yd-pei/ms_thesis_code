@@ -9,6 +9,8 @@ uv sync
 uv run hf download yidingp/mitigate_preference_dpo --local-dir ./data --repo-type dataset
 ```
 
+Note: `vllm` and `bitsandbytes` are configured as non-Darwin dependencies (`platform_system != 'Darwin'`). On macOS, `uv sync` will skip them automatically. Use API backends (`openai` / `anthropic`) on macOS, or run local `vllm` inference in a non-Darwin environment.
+
 ### HuggingFace Token
 
 For gated/private models, you can use either method:

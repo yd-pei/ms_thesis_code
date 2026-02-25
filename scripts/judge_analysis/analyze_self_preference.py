@@ -27,7 +27,9 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
-DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "06_position_independent_response"
+DEFAULT_INPUT_DIR = (
+    PROJECT_ROOT / "data" / "06_position_independent_response" / "greedy"
+)
 
 
 def normalize_gold_label(value: Any) -> str | None:
@@ -107,7 +109,7 @@ def analyze_file(path: Path) -> dict[str, Any]:
             is_self_correct = None
             if gold is not None and self_label is not None:
                 model_eval_total += 1
-                is_self_correct = (self_label == gold)
+                is_self_correct = self_label == gold
                 if is_self_correct:
                     model_correct += 1
 
@@ -124,7 +126,9 @@ def analyze_file(path: Path) -> dict[str, Any]:
                             self_selected_but_wrong += 1
 
     model_accuracy = (model_correct / model_eval_total) if model_eval_total else None
-    self_selected_rate = (self_selected / judge_valid_total) if judge_valid_total else None
+    self_selected_rate = (
+        (self_selected / judge_valid_total) if judge_valid_total else None
+    )
     harmful_self_pref_rate = (
         self_selected_but_wrong / self_selected_with_eval
         if self_selected_with_eval
@@ -168,7 +172,9 @@ def collect_files(input_dir: Path, input_file: Path | None) -> list[Path]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Analyze self-preference metrics for judge outputs.")
+    parser = argparse.ArgumentParser(
+        description="Analyze self-preference metrics for judge outputs."
+    )
     parser.add_argument(
         "--input-dir",
         type=Path,
@@ -202,16 +208,24 @@ def main() -> None:
         print(f"\n[{r['file_name']}]")
         print(f"  self_label_field={r['self_label_field']}")
         print(f"  total_records={r['total_records']}")
-        print(f"  model_accuracy={fmt_pct(r['model_accuracy'])} ({r['model_correct']}/{r['model_eval_total']})")
-        print(f"  self_selected_rate={fmt_pct(r['self_selected_rate'])} ({r['self_selected']}/{r['judge_valid_total']})")
+        print(
+            f"  model_accuracy={fmt_pct(r['model_accuracy'])} ({r['model_correct']}/{r['model_eval_total']})"
+        )
+        print(
+            f"  self_selected_rate={fmt_pct(r['self_selected_rate'])} ({r['self_selected']}/{r['judge_valid_total']})"
+        )
         print(
             "  "
             f"harmful_self_preference_rate={fmt_pct(r['harmful_self_preference_rate'])} "
             f"({r['self_selected_but_wrong']}/{r['self_selected_with_eval']})"
         )
 
-    overall_model_accuracy = (sum_model_correct / sum_model_eval_total) if sum_model_eval_total else None
-    overall_self_selected_rate = (sum_self_selected / sum_judge_valid_total) if sum_judge_valid_total else None
+    overall_model_accuracy = (
+        (sum_model_correct / sum_model_eval_total) if sum_model_eval_total else None
+    )
+    overall_self_selected_rate = (
+        (sum_self_selected / sum_judge_valid_total) if sum_judge_valid_total else None
+    )
     overall_harmful_rate = (
         sum_self_selected_but_wrong / sum_self_selected_with_eval
         if sum_self_selected_with_eval
@@ -220,8 +234,12 @@ def main() -> None:
 
     print("\n=== Overall ===")
     print(f"files={len(all_results)}")
-    print(f"model_accuracy={fmt_pct(overall_model_accuracy)} ({sum_model_correct}/{sum_model_eval_total})")
-    print(f"self_selected_rate={fmt_pct(overall_self_selected_rate)} ({sum_self_selected}/{sum_judge_valid_total})")
+    print(
+        f"model_accuracy={fmt_pct(overall_model_accuracy)} ({sum_model_correct}/{sum_model_eval_total})"
+    )
+    print(
+        f"self_selected_rate={fmt_pct(overall_self_selected_rate)} ({sum_self_selected}/{sum_judge_valid_total})"
+    )
     print(
         f"harmful_self_preference_rate={fmt_pct(overall_harmful_rate)} "
         f"({sum_self_selected_but_wrong}/{sum_self_selected_with_eval})"
