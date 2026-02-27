@@ -78,3 +78,9 @@ uv run align_lab judge \
     --output-path outputs/judge_results_swapped.jsonl \
     --swap-answers
 ```
+
+### Restyle
+
+```bash
+uv run python scripts/restyle/poll_and_download_gemini_batches.py
+```
