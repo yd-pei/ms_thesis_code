@@ -84,3 +84,13 @@ uv run align_lab judge \
 ```bash
 uv run python scripts/restyle/poll_and_download_gemini_batches.py
 ```
+
+```bash
+uv run align_lab judge \
+    --model meta-llama/Llama-3.3-70B-Instruct \
+    --data-path data/11_restyled_position_independent_response/ds/llama33_70b_judge.jsonl \
+    --quality-path data/01_processed_quality/quality_train.jsonl \
+    --config-path configs/judge.yaml \
+    --hf-token "<hf_token>" \
+    --output-path outputs/llama33_70b.jsonl
+```
