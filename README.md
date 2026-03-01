@@ -99,3 +99,12 @@ uv run align_lab judge \
     --hf-token "<hf_token>" \
     --output-path outputs/llama33_70b.jsonl
 ```
+
+## Experiment setup
+
+### Models
+
+- 'Qwen/Qwen2.5-7B-Instruct'
+- 'meta-llama/Llama-3.1-8B-Instruct'
+- 'meta-llama/Llama-3.1-70B-Instruct'
+- 'meta-llama/Llama-3.3-70B-Instruct'
