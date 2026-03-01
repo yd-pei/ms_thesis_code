@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from align_lab.inference.engine import run_inference, run_offline_inference
 from align_lab.inference.judge import run_vllm_judge_inference
+from align_lab.inference.raw_judge import run_raw_judge_inference
 # from align_lab.eval.benchmarks import run_evaluation
 
 
@@ -173,6 +174,56 @@ def judge(model, hf_token, quantization, data_path, quality_path, output_path, s
         hf_token=hf_token,
         quantization=quant,
         sampling_config=sampling_config,
+    )
+
+
+@cli.command("raw_judge")
+@click.option("--model", required=True, help="Judge model ID (Instruct/chat model)")
+@click.option("--hf-token", envvar="HF_TOKEN", help="HuggingFace token for gated models")
+@click.option(
+    "--data-path",
+    default="data/04_clean_pairwise_output/llama31_70b__ds_v3.jsonl",
+    help="Input pairwise-clean JSONL file",
+)
+@click.option(
+    "--quality-path",
+    default="data/01_processed_quality/quality_train.jsonl",
+    help="QuALITY train JSONL used to recover article/question by question_unique_id",
+)
+@click.option(
+    "--output-path",
+    default="outputs/raw_judge_results.jsonl",
+    help="Output JSONL file (keeps all original fields + judge_output, prob_1, prob_2)",
+)
+@click.option(
+    "--swap-answers",
+    is_flag=True,
+    help="Swap answer1/answer2 when building judge prompt",
+)
+@click.option(
+    "--batch-size",
+    default=1,
+    type=int,
+    help="Batch size for forward pass (default: 1)",
+)
+def raw_judge(model, hf_token, data_path, quality_path, output_path, swap_answers, batch_size):
+    """Run judge via a single forward pass (transformers, bf16, no quantization).
+
+    Instead of generating text, compares the probability of token "1" vs "2"
+    at the last position of the model's output distribution.
+    """
+    if not hf_token:
+        click.echo("Warning: HF_TOKEN is usually required for gated models.")
+
+    click.echo(f"Running raw judge (forward-pass) with model: {model}")
+    run_raw_judge_inference(
+        model_path=model,
+        data_path=data_path,
+        output_path=output_path,
+        quality_path=quality_path,
+        swap_answers=swap_answers,
+        hf_token=hf_token,
+        batch_size=batch_size,
     )
 
 

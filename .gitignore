@@ -1,6 +1,7 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+claude.md
 build/
 dist/
 wheels/
@@ -9,6 +10,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+.claude
 
 data/
 outputs/

@@ -13,22 +13,16 @@ Note: `vllm` and `bitsandbytes` are configured as non-Darwin dependencies (`plat
 
 ### HuggingFace Token
 
-For gated/private models, you can use either method:
+Copy the sample env file and fill in your token:
 
 ```bash
-# Option 1: environment variable (recommended)
-export HF_TOKEN="hf_xxx"
+cp .env.example .env
+# Then edit .env and replace hf_your_token_here with your actual token
 ```
 
-```bash
-# Option 2: pass token directly in command
---hf-token "hf_xxx"
-```
+The token will be automatically loaded via `.env`. You can also pass it directly in the command with `--hf-token "hf_xxx"`.
 
-`--hf-token` can be placed anywhere in the command options (usually after `--model` for readability).
-It is needed for local `vllm` model loading (inference/judge), not for OpenAI/Anthropic API calls.
-
-`huggingface-cli login` is optional for this project (not required if `HF_TOKEN`/`--hf-token` is provided).
+It is needed for local model loading (inference/judge/raw_judge), not for OpenAI/Anthropic API calls.
 
 ### Inference
 
