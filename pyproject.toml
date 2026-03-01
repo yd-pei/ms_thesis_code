@@ -20,6 +20,7 @@ dependencies = [
     "torch",
     "tqdm>=4.67.3",
     "vllm>=0.15.1; platform_system != 'Darwin'",
+    "transformers==4.57.6",
 ]
 
 [project.scripts]
