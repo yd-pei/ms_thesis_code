@@ -2,9 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INPUT_DIR="$ROOT_DIR/data/11_restyled_response/raw"
+INPUT_DIR="data/11_restyled_response/raw"
 QUALITY_PATH="$ROOT_DIR/data/01_processed_quality/quality_train.jsonl"
 OUTPUT_DIR="$ROOT_DIR/outputs"
+INPUT_DIR_SET_BY_USER=0
 
 usage() {
   cat <<'EOF'
@@ -27,6 +28,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --input-dir)
       INPUT_DIR="$2"
+      INPUT_DIR_SET_BY_USER=1
       shift 2
       ;;
     --quality-path)
@@ -59,12 +61,66 @@ if [[ "$OUTPUT_DIR" != /* ]]; then
   OUTPUT_DIR="$ROOT_DIR/$OUTPUT_DIR"
 fi
 
+resolve_input_dir() {
+  local preferred="$1"
+  local chosen=""
+
+  if [[ -d "$preferred" ]]; then
+    echo "$preferred"
+    return 0
+  fi
+
+  if [[ "$INPUT_DIR_SET_BY_USER" -eq 1 ]]; then
+    return 1
+  fi
+
+  local candidates=(
+    "$ROOT_DIR/data/11_restyled_response/raw"
+    "$ROOT_DIR/data/11_restyled_response/ds"
+    "$ROOT_DIR/data/11_restyled_position_independent_response/raw"
+    "$ROOT_DIR/data/13_position_independent_restyled/raw"
+    "$ROOT_DIR/data/13_position_independent_restyled/ds"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -d "$candidate" ]]; then
+      chosen="$candidate"
+      break
+    fi
+  done
+
+  if [[ -n "$chosen" ]]; then
+    echo "$chosen"
+    return 0
+  fi
+
+  return 1
+}
+
+if resolved_input_dir="$(resolve_input_dir "$INPUT_DIR")"; then
+  if [[ "$resolved_input_dir" != "$INPUT_DIR" ]]; then
+    echo "[warn] Input dir not found: $INPUT_DIR"
+    echo "[info] Auto-switched to: $resolved_input_dir"
+  fi
+  INPUT_DIR="$resolved_input_dir"
+else
+  echo "[error] Input dir not found: $INPUT_DIR"
+  echo "[hint] Checked common candidates under $ROOT_DIR/data:"
+  echo "       - 11_restyled_response/raw"
+  echo "       - 11_restyled_response/ds"
+  echo "       - 11_restyled_position_independent_response/raw"
+  echo "       - 13_position_independent_restyled/raw"
+  echo "       - 13_position_independent_restyled/ds"
+  echo "[hint] You can set it explicitly, e.g.:"
+  echo "       bash scripts/run_raw_judge_restyled.sh --input-dir data/11_restyled_response/ds"
+  exit 1
+fi
+
 command -v uv >/dev/null 2>&1 || {
   echo "[error] uv not found in PATH."
   exit 1
 }
 
-[[ -d "$INPUT_DIR" ]] || { echo "[error] Input dir not found: $INPUT_DIR"; exit 1; }
 [[ -f "$QUALITY_PATH" ]] || { echo "[error] Quality file not found: $QUALITY_PATH"; exit 1; }
 mkdir -p "$OUTPUT_DIR"
 
