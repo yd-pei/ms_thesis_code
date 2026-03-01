@@ -40,9 +40,9 @@ from typing import Any
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
-DEFAULT_EXTRACTED_ROOT = PROJECT_ROOT / "data" / "07_extracted_prompt"
+DEFAULT_EXTRACTED_ROOT = PROJECT_ROOT / "data" / "07_extracted_prompt" / "raw"
 DEFAULT_QUALITY_TRAIN = PROJECT_ROOT / "data" / "01_processed_quality" / "quality_train.jsonl"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "08_gemini_api" / "with_ds"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "08_gemini_api" / "raw"
 
 SYSTEM_PROMPT = (
     "You are a helpful assistant that helps rewrites sentences. "

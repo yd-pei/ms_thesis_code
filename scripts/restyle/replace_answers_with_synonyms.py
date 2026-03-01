@@ -29,8 +29,8 @@ from typing import Any
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
-DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "09_gemini_restyle_output" / "with_ds"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "10_replaced_answer" / "with_ds"
+DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "09_gemini_restyle_output" / "raw"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "10_replaced_answer" / "raw"
 
 
 def collect_input_files(input_dir: Path) -> list[Path]:

@@ -21,7 +21,7 @@ Default:
     data/07_extracted_prompt/<model_name>/with_ds/<model_name>_judge.jsonl
 
 Usage:
-  python3 scripts/judge_analysis/extract_prompt_fields.py
+  python3 scripts/restyle/extract_prompt_fields.py
 """
 
 from __future__ import annotations
@@ -34,8 +34,8 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
-DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "06_position_independent_response" / "greedy"
-DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "data" / "07_extracted_prompt"
+DEFAULT_INPUT_DIR = PROJECT_ROOT / "data" / "06_position_independent_response" / "raw"
+DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "data" / "07_extracted_prompt" / "raw"
 
 
 def infer_model_name(file_path: Path) -> str:

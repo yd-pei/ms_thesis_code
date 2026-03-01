@@ -28,7 +28,7 @@ from typing import Any
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 DEFAULT_INPUT_DIR = (
-    PROJECT_ROOT / "data" / "06_position_independent_response" / "greedy"
+    PROJECT_ROOT / "data" / "06_position_independent_response" / "raw"
 )
 
 

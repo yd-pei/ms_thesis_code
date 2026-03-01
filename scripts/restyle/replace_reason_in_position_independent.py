@@ -11,7 +11,7 @@ Behavior:
 - Match rows one-to-one by question_unique_id.
 - Only replace <model>_output_reason field with source "Answer".
 - Keep all other fields unchanged (gold_label, output_label, ds_v3 fields, etc.).
-- By default writes back in place to the target directory.
+- By default writes to data/11_restyled_response/raw.
 """
 
 from __future__ import annotations
@@ -25,8 +25,9 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
-DEFAULT_TARGET_DIR = PROJECT_ROOT / "data" / "06_position_independent_response" / "greedy"
-DEFAULT_SOURCE_DIR = PROJECT_ROOT / "data" / "10_replaced_answer" / "with_ds"
+DEFAULT_TARGET_DIR = PROJECT_ROOT / "data" / "06_position_independent_response" / "raw"
+DEFAULT_SOURCE_DIR = PROJECT_ROOT / "data" / "10_replaced_answer" / "raw"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "11_restyled_response" / "raw"
 
 
 def collect_target_files(target_dir: Path) -> list[Path]:
@@ -159,8 +160,8 @@ def main() -> None:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=None,
-        help="Output directory for updated files. Default: overwrite target-dir in place.",
+        default=DEFAULT_OUTPUT_DIR,
+        help="Output directory for updated files. Default: data/11_restyled_response/raw.",
     )
     args = parser.parse_args()
 
@@ -169,7 +170,7 @@ def main() -> None:
         print("No target files found.")
         return
 
-    out_dir = args.output_dir or args.target_dir
+    out_dir = args.output_dir
 
     total_rows = 0
     total_replaced = 0

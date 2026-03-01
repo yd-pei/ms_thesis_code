@@ -93,7 +93,7 @@ uv run python scripts/restyle/poll_and_download_gemini_batches.py
 ```bash
 uv run align_lab judge \
     --model meta-llama/Llama-3.3-70B-Instruct \
-    --data-path data/11_restyled_position_independent_response/ds/llama33_70b_judge.jsonl \
+    --data-path data/11_restyled_position_independent_response/raw/llama33_70b_judge.jsonl \
     --quality-path data/01_processed_quality/quality_train.jsonl \
     --config-path configs/judge.yaml \
     --hf-token "<hf_token>" \
@@ -104,7 +104,7 @@ uv run align_lab judge \
 
 ### Models
 
-- 'Qwen/Qwen2.5-7B-Instruct'
-- 'meta-llama/Llama-3.1-8B-Instruct'
-- 'meta-llama/Llama-3.1-70B-Instruct'
-- 'meta-llama/Llama-3.3-70B-Instruct'
+- Qwen/Qwen2.5-7B-Instruct
+- meta-llama/Llama-3.1-8B-Instruct
+- meta-llama/Llama-3.1-70B-Instruct
+- meta-llama/Llama-3.3-70B-Instruct
