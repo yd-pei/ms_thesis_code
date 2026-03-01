@@ -78,7 +78,7 @@ uv run align_lab judge \
 ```bash
 uv run align_lab raw_judge \
     --model meta-llama/Llama-3.1-70B-Instruct \
-    --data-path data/04_clean_pairwise_output/llama31_70b__ds_v3.jsonl \
+    --data-path data/04_clean_pairwise_output/greedy/llama31_70b__ds_v3.jsonl \
     --quality-path data/01_processed_quality/quality_train.jsonl \
     --output-path outputs/llama_31_70_judge_results.jsonl \
     --swap-answers
