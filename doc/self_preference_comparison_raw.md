@@ -125,3 +125,54 @@ Overall reading:
 - `outputs/filter_12_to_13_position_independent_raw.txt`
 - `outputs/analyze_self_preference_06_raw.txt`
 - `outputs/analyze_self_preference_13_raw.txt`
+- `outputs/analyze_self_preference_12_raw_non_reverse.txt`
+
+---
+
+## 6) Direct analysis on 12/raw (non-reverse only)
+
+This section follows the new requirement: no output-validity check and no position-independent filtering.
+It directly analyzes these four files under `data/12_output_restyled/raw`:
+
+- `llama31_70b.jsonl`
+- `llama31_8b.jsonl`
+- `llama33_70b.jsonl`
+- `qwen25_7b.jsonl`
+
+Source log: `outputs/analyze_self_preference_12_raw_non_reverse.txt`
+
+### Overall (4 files combined)
+
+| Metric | 12/raw non-reverse |
+|---|---:|
+| files | 4 |
+| total_records used | 1186 |
+| model_accuracy | 15.94% (189/1186) |
+| self_selected_rate | 13.74% (163/1186) |
+| harmful_self_preference_rate | 76.07% (124/163) |
+
+### Per-model
+
+#### llama31_70b
+- total_records: 355
+- model_accuracy: 18.03% (64/355)
+- self_selected_rate: 11.27% (40/355)
+- harmful_self_preference_rate: 65.00% (26/40)
+
+#### llama31_8b
+- total_records: 217
+- model_accuracy: 8.76% (19/217)
+- self_selected_rate: 10.14% (22/217)
+- harmful_self_preference_rate: 90.91% (20/22)
+
+#### llama33_70b
+- total_records: 292
+- model_accuracy: 21.92% (64/292)
+- self_selected_rate: 15.75% (46/292)
+- harmful_self_preference_rate: 65.22% (30/46)
+
+#### qwen25_7b
+- total_records: 322
+- model_accuracy: 13.04% (42/322)
+- self_selected_rate: 17.08% (55/322)
+- harmful_self_preference_rate: 87.27% (48/55)

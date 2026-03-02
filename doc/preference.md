@@ -55,3 +55,34 @@ Source: `data/13_position_independent_restyled/ds` with command:
 
 - Before/After sample sizes differ (874 vs 831), so the comparison is directional rather than fully matched-pair causal.
 - On this aggregate view, restyle reduces self-selection and harmful self-preference rate.
+
+## Restyle Direct (12/ds, non-reverse)
+
+Source: `data/12_output_restyled/ds` (4 files; excludes reverse folder) with command:
+
+`for f in data/12_output_restyled/ds/*.jsonl; do uv run python scripts/judge_analysis/analyze_self_preference.py --input-file "$f"; done`
+
+| Model | Total | model_accuracy | self_selected_rate | harmful_self_preference_rate |
+|---|---:|---:|---:|---:|
+| llama31_70b | 236 | 21.19% (50/236) | 14.83% (35/236) | 71.43% (25/35) |
+| llama31_8b | 204 | 8.82% (18/204) | 7.35% (15/204) | 93.33% (14/15) |
+| llama33_70b | 242 | 21.90% (53/242) | 28.93% (70/242) | 70.00% (49/70) |
+| qwen25_7b | 203 | 11.82% (24/203) | 17.73% (36/203) | 88.89% (32/36) |
+
+### Overall (12/ds Direct)
+
+- total_records: 885
+- model_accuracy: 16.38% (145/885)
+- self_selected_rate: 17.63% (156/885)
+- harmful_self_preference_rate: 76.92% (120/156)
+
+### Delta vs Restyle Before (06/greedy baseline)
+
+- total_records: +11
+- model_accuracy: +0.82 pp
+- self_selected_rate: -0.91 pp
+- harmful_self_preference_rate: +1.61 pp
+
+### Log
+
+- `outputs/analyze_self_preference_12_ds_non_reverse.txt`
