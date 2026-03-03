@@ -116,7 +116,8 @@ for data_path in "$INPUT_DIR"/*.jsonl; do
     --model "$hf_model" \
     --data-path "$data_path" \
     --quality-path "$QUALITY_PATH" \
-    --output-path "$output_normal"
+    --output-path "$output_normal" \
+    --batch-size 2
   run_count=$((run_count + 1))
 
   # Swap mode
@@ -129,7 +130,8 @@ for data_path in "$INPUT_DIR"/*.jsonl; do
     --data-path "$data_path" \
     --quality-path "$QUALITY_PATH" \
     --output-path "$output_swapped" \
-    --swap-answers
+    --swap-answers \
+    --batch-size 2
   run_count=$((run_count + 1))
 
 done
