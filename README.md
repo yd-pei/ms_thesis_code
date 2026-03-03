@@ -51,6 +51,8 @@ uv run align_lab inference \
     --hf-token "<hf_token>"
 ```
 
+Note: `align_lab inference` now defaults to `--quantization none` (native `bf16`, no quantization) when using `--backend vllm`.
+
 ### Judge (pairwise inference)
 
 ```bash

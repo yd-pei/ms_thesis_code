@@ -68,8 +68,8 @@ def eval(checkpoint, dataset):
 @click.option(
     "--quantization",
     type=click.Choice(["bitsandbytes", "gptq", "awq", "fp8", "none"]),
-    default="bitsandbytes",
-    help="Quantization method for vLLM (default: bitsandbytes 8-bit)",
+    default="none",
+    help="Quantization method for vLLM (default: none, i.e., bf16 without quantization)",
 )
 @click.option(
     "--data-path",

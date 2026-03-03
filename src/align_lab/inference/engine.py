@@ -74,7 +74,7 @@ def run_offline_inference(
     data_path: str, 
     output_path: str, 
     hf_token: str = None, 
-    quantization: str = "bitsandbytes",
+    quantization: str | None = None,
     sampling_config: Optional[dict[str, Any]] = None,
 ):
     """
@@ -85,8 +85,8 @@ def run_offline_inference(
         data_path: Path to the input JSONL file.
         output_path: Path to save inference results.
         hf_token: HuggingFace token for gated models.
-        quantization: Quantization method. Options: 'bitsandbytes' (8-bit, recommended
-                      for memory-constrained setups), 'gptq', 'awq', 'fp8', None.
+        quantization: Quantization method. Options: 'bitsandbytes', 'gptq', 'awq',
+                  'fp8', or None. Default is None (native bf16, no quantization).
     """
     try:
         from vllm import LLM, SamplingParams
@@ -161,7 +161,7 @@ def run_offline_inference(
             quantization="fp8",
         )
     else:
-        # No quantization, full precision
+        # No quantization, native precision path (bf16)
         llm_kwargs["dtype"] = "bfloat16"
     
     llm = LLM(**llm_kwargs)
