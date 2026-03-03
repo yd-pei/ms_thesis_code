@@ -111,3 +111,6 @@ uv run align_lab judge \
 - meta-llama/Llama-3.1-8B-Instruct
 - meta-llama/Llama-3.1-70B-Instruct
 - meta-llama/Llama-3.3-70B-Instruct
+- Qwen/Qwen3.5-9B
+- openai/gpt-oss-20b
+- mistralai/Mistral-Small-24B-Instruct-2501
