@@ -46,10 +46,17 @@ def extract_answer_components(output_text: str):
     """
     Extracts the reasoning and the answer label from the model output.
     Expected format: " [Reasoning text...] Answer: (X)" or similar variations.
+
+    Uses the *last* match to avoid capturing spurious "Answer: (X)" mentions
+    that may appear in the reasoning section.
     """
-    # 1. Extract Answer Label
-    # Look for patterns like "Answer: (A)", "Answer: A", or just "(A)" at the end
-    label_match = re.search(r"Answer:\s*\(?([A-Da-d])\)?", output_text, re.IGNORECASE)
+    # 1. Extract Answer Label — take the LAST match (closest to end of output)
+    # Handles: "Answer: (A)", "Answer:A", "**Answer**: (A)", "**Answer:** (A)", etc.
+    all_matches = list(
+        re.finditer(r"\*{0,2}Answer\*{0,2}:\s*\(?([A-Da-d])\)?", output_text, re.IGNORECASE)
+    )
+    label_match = all_matches[-1] if all_matches else None
+
     if not label_match:
         # Fallback: look for just (A)/(B)/(C)/(D) at the very end of the string
         label_match = re.search(r"\(?([A-Da-d])\)?\s*$", output_text)
@@ -57,7 +64,7 @@ def extract_answer_components(output_text: str):
     output_label = label_match.group(1).upper() if label_match else None
 
     # 2. Extract Reasoning
-    # Assuming reasoning comes before "Answer:"
+    # Assuming reasoning comes before the matched "Answer:" label
     if label_match:
         # Everything up to the Answer label part
         reasoning = output_text[:label_match.start()].strip()
@@ -66,7 +73,7 @@ def extract_answer_components(output_text: str):
     else:
         # If no label found, treat the whole thing as potentially reasoning (or malformed)
         reasoning = output_text.strip()
-        
+
     return output_label, reasoning
 
 def run_offline_inference(
