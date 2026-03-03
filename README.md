@@ -47,6 +47,7 @@ uv run align_lab inference \
     --model meta-llama/Llama-3.1-70B-Instruct \
     --backend vllm \
     --config-path configs/inference.yaml \
+    --quantization none \
     --hf-token "<hf_token>"
 ```
 
