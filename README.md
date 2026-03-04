@@ -76,6 +76,10 @@ uv run align_lab judge \
     --swap-answers
 ```
 
+```bash
+bash scripts/run_official_judge.sh --mode judge --phase both --with-swap --judge-quantization none
+```
+
 ### Raw Judge (judge with transformers)
 
 ```bash

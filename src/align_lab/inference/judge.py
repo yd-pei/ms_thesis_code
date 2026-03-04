@@ -10,7 +10,7 @@ JUDGE_SYSTEM_PROMPT = "You are a helpful and objective AI assistant acting as an
 DEFAULT_JUDGE_SAMPLING = {
     "temperature": 0.0,
     "top_p": 1.0,
-    "max_tokens": 16,
+    "max_tokens": 1,
     "n": 1,
 }
 
@@ -95,10 +95,13 @@ def run_vllm_judge_inference(
     sampling_config: dict[str, Any] | None = None,
 ):
     """
-    Judge pairwise model outputs with a local vLLM model.
+    Judge pairwise model outputs with a local vLLM model using logprobs.
+
+    Generates 1 token with logprobs, then extracts P("1") and P("2")
+    from the logprobs to determine the judge's choice.
 
     Input: cleaned pairwise JSONL from data/04_clean_pairwise_output.
-    Output: same fields as input plus one extra field: judge_output.
+    Output: same fields as input plus judge_output, prob_1, prob_2.
     """
     try:
         from vllm import LLM, SamplingParams
@@ -108,6 +111,7 @@ def run_vllm_judge_inference(
             "vLLM is not installed or not supported on this device. "
             "This judge command requires Linux/CUDA with vLLM."
         )
+    from math import exp
 
     if hf_token:
         os.environ["HF_TOKEN"] = hf_token
@@ -200,15 +204,22 @@ def run_vllm_judge_inference(
 
     llm = LLM(**llm_kwargs)
 
+    # Resolve token IDs for "1" and "2"
+    tokenizer = llm.get_tokenizer()
+    token_id_1 = tokenizer.encode("1", add_special_tokens=False)[0]
+    token_id_2 = tokenizer.encode("2", add_special_tokens=False)[0]
+    print(f"Token ID for '1': {token_id_1}, Token ID for '2': {token_id_2}")
+
     resolved_sampling = _resolve_judge_sampling_config(sampling_config)
     sampling_params = SamplingParams(
         temperature=resolved_sampling["temperature"],
         top_p=resolved_sampling["top_p"],
-        max_tokens=resolved_sampling["max_tokens"],
+        max_tokens=1,
         n=resolved_sampling["n"],
+        logprobs=20,
     )
 
-    print(f"Running judge inference for {len(all_messages)} samples...")
+    print(f"Running judge inference (logprobs) for {len(all_messages)} samples...")
     outputs = llm.chat(all_messages, sampling_params)
 
     if os.path.dirname(output_path):
@@ -217,9 +228,32 @@ def run_vllm_judge_inference(
     print(f"Saving judge results to {output_path}...")
     with open(output_path, "w", encoding="utf-8") as f:
         for row, output in tqdm(zip(judge_records, outputs), total=len(judge_records)):
-            generated_text = output.outputs[0].text.strip()
+            # Extract logprobs from the first generated token
+            token_logprobs = output.outputs[0].logprobs[0]  # dict[token_id -> Logprob]
+
+            logprob_1 = None
+            logprob_2 = None
+            for tid, logprob_obj in token_logprobs.items():
+                if tid == token_id_1:
+                    logprob_1 = logprob_obj.logprob
+                elif tid == token_id_2:
+                    logprob_2 = logprob_obj.logprob
+
+            # If a token wasn't in top-k, assign a very small logprob
+            if logprob_1 is None:
+                logprob_1 = -100.0
+            if logprob_2 is None:
+                logprob_2 = -100.0
+
+            prob_1 = exp(logprob_1)
+            prob_2 = exp(logprob_2)
+
+            judge_output = "1" if prob_1 >= prob_2 else "2"
+
             out = dict(row)
-            out["judge_output"] = generated_text
+            out["judge_output"] = judge_output
+            out["prob_1"] = prob_1
+            out["prob_2"] = prob_2
             f.write(json.dumps(out, ensure_ascii=False) + "\n")
 
     print("Judge inference completed.")
