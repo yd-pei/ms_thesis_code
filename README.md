@@ -95,6 +95,10 @@ uv run align_lab raw_judge \
 bash scripts/run_official_judge.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16
 ```
 
+```bash
+uv run python scripts/run_official_judge_single_load.py --mode raw_judge --phase both --with-swap --raw-batch-size 16
+```
+
 ### Restyle
 
 ```bash
