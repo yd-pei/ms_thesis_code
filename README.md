@@ -80,6 +80,10 @@ uv run align_lab judge \
 bash scripts/run_official_judge.sh --mode judge --phase both --with-swap --judge-quantization none
 ```
 
+```bash
+bash scripts/run_official_judge_single_load.sh --mode judge --phase both --with-swap --judge-quantization none
+```
+
 ### Raw Judge (judge with transformers)
 
 ```bash
