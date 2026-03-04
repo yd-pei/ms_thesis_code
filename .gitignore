@@ -2,6 +2,8 @@
 __pycache__/
 *.py[oc]
 CLAUDE.md
+GEMINI.md
+AGENTS.md
 build/
 dist/
 wheels/
