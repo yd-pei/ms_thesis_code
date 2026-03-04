@@ -96,7 +96,7 @@ bash scripts/run_official_judge.sh --mode raw_judge --phase both --with-swap --r
 ```
 
 ```bash
-uv run python scripts/run_official_judge_single_load.py --mode raw_judge --phase both --with-swap --raw-batch-size 16
+bash scripts/run_official_judge_single_load.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16
 ```
 
 ### Restyle
