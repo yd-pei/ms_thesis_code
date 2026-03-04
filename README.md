@@ -91,6 +91,10 @@ uv run align_lab raw_judge \
     --swap-answers
 ```
 
+```bash
+bash scripts/run_official_judge.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16
+```
+
 ### Restyle
 
 ```bash
