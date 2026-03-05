@@ -92,16 +92,20 @@ uv run align_lab raw_judge \
     --data-path data/04_clean_pairwise_output/greedy/llama31_70b__ds_v3.jsonl \
     --quality-path data/01_processed_quality/quality_train.jsonl \
     --output-path outputs/llama_31_70_judge_results.jsonl \
+    --batch-size 4 \
+    --max-batch-tokens 12000 \
     --swap-answers
 ```
 
 ```bash
-bash scripts/run_official_judge.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16
+bash scripts/run_official_judge.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16 --raw-max-batch-tokens 12000
 ```
 
 ```bash
-bash scripts/run_official_judge_single_load.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16
+bash scripts/run_official_judge_single_load.sh --mode raw_judge --phase both --with-swap --raw-batch-size 16 --raw-max-batch-tokens 12000
 ```
+
+Note: `max-batch-tokens` / `raw-max-batch-tokens` enables token-budget batching for `raw_judge` and helps stabilize peak VRAM usage on long prompts.
 
 ### Restyle
 

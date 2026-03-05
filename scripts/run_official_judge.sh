@@ -35,6 +35,7 @@ INPUT_ROOT="$ROOT_DIR/data/official"
 QUALITY_PATH="$ROOT_DIR/data/official/quality_official_context.jsonl"
 OUTPUT_ROOT="$ROOT_DIR/data/official"
 RAW_BATCH_SIZE=2
+RAW_MAX_BATCH_TOKENS=0
 JUDGE_CONFIG="$ROOT_DIR/configs/judge.yaml"
 JUDGE_QUANTIZATION="bitsandbytes"
 WITH_SWAP=0
@@ -52,6 +53,7 @@ Options:
   --quality-path <path>              Context JSONL (default: data/official/quality_official_context.jsonl)
   --output-root <path>               Root for judged outputs (default: data/official)
   --raw-batch-size <int>             raw_judge batch size (default: 2)
+  --raw-max-batch-tokens <int>       raw_judge token budget per batch after padding (default: 0=disabled)
   --judge-config <path>              judge config YAML (default: configs/judge.yaml)
   --judge-quantization <q>           judge quantization: bitsandbytes|gptq|awq|fp8|none (default: bitsandbytes)
   --with-swap                        Also run swapped answers
@@ -91,6 +93,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --raw-batch-size)
       RAW_BATCH_SIZE="$2"
+      shift 2
+      ;;
+    --raw-max-batch-tokens)
+      RAW_MAX_BATCH_TOKENS="$2"
       shift 2
       ;;
     --judge-config)
@@ -218,7 +224,8 @@ for phase in "${phases[@]}"; do
         --data-path "$data_path" \
         --quality-path "$QUALITY_PATH" \
         --output-path "$output_normal" \
-        --batch-size "$RAW_BATCH_SIZE"
+        --batch-size "$RAW_BATCH_SIZE" \
+        --max-batch-tokens "$RAW_MAX_BATCH_TOKENS"
       run_count=$((run_count + 1))
 
       if [[ "$WITH_SWAP" -eq 1 ]]; then
@@ -233,7 +240,8 @@ for phase in "${phases[@]}"; do
           --quality-path "$QUALITY_PATH" \
           --output-path "$output_swapped" \
           --swap-answers \
-          --batch-size "$RAW_BATCH_SIZE"
+          --batch-size "$RAW_BATCH_SIZE" \
+          --max-batch-tokens "$RAW_MAX_BATCH_TOKENS"
         run_count=$((run_count + 1))
       fi
     fi

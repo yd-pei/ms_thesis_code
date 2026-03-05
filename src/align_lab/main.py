@@ -206,7 +206,13 @@ def judge(model, hf_token, quantization, data_path, quality_path, output_path, s
     type=int,
     help="Batch size for forward pass (default: 1)",
 )
-def raw_judge(model, hf_token, data_path, quality_path, output_path, swap_answers, batch_size):
+@click.option(
+    "--max-batch-tokens",
+    default=0,
+    type=int,
+    help="Optional token-budget cap per batch after padding (0 disables, default: 0)",
+)
+def raw_judge(model, hf_token, data_path, quality_path, output_path, swap_answers, batch_size, max_batch_tokens):
     """Run judge via a single forward pass (transformers, bf16, no quantization).
 
     Instead of generating text, compares the probability of token "1" vs "2"
@@ -224,6 +230,7 @@ def raw_judge(model, hf_token, data_path, quality_path, output_path, swap_answer
         swap_answers=swap_answers,
         hf_token=hf_token,
         batch_size=batch_size,
+        max_batch_tokens=max_batch_tokens if max_batch_tokens > 0 else None,
     )
 
 

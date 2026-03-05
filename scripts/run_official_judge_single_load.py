@@ -98,6 +98,12 @@ def parse_args() -> argparse.Namespace:
         help="Batch size for raw_judge (default: 16).",
     )
     parser.add_argument(
+        "--raw-max-batch-tokens",
+        type=int,
+        default=0,
+        help="Token-budget cap per raw_judge batch after padding (default: 0=disabled).",
+    )
+    parser.add_argument(
         "--judge-config",
         type=Path,
         default=PROJECT_ROOT / "configs" / "judge.yaml",
@@ -319,6 +325,7 @@ def main() -> None:
     print(f"phases:       {phases}")
     print(f"with_swap:    {args.with_swap}")
     print(f"raw_batch:    {args.raw_batch_size}")
+    print(f"raw_max_tok:  {args.raw_max_batch_tokens}")
     print(f"judge_quant:  {args.judge_quantization}")
     print(f"dry_run:      {args.dry_run}")
 
@@ -360,6 +367,7 @@ def main() -> None:
                         swap_answers=False,
                         hf_token=hf_token,
                         batch_size=args.raw_batch_size,
+                        max_batch_tokens=args.raw_max_batch_tokens if args.raw_max_batch_tokens > 0 else None,
                     )
                 elif mode == "judge":
                     print(f"[{judge_alias}] running judge once...")
@@ -391,4 +399,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
